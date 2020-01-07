@@ -1,5 +1,5 @@
 ## Mako
-Mako is a bottom-up guided model-free CSV detection tool. It uses a mutational signal graph and pattern growth to detect maximal subgraphs as CSVs.
+Mako is a bottom-up guided model-free CSV detection tool. It first builds a mutational signal graph and utilizes pattern growth to detect maximal subgraphs as CSVs.
 
 ## Install and run
 

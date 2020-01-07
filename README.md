@@ -85,7 +85,7 @@ java -jar /path/to/Mako.jar fa=GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg
 
 **sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of informations. See table below for details.
 
-![File_headlings](D:\mako_works\Github_files\File_headlings.png)
+![File_headlings](https://github.com/jiadong324/Mako/blob/master/supports/File_headlings.png)
 
 **sampleName.mako.sites.txt:** Mako detect SVs. Additional information of each record can be found in the file heading.
 

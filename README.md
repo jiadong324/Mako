@@ -5,12 +5,13 @@ Mako is a bottom-up guided model-free CSV detection tool. It first builds a muta
 
 Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** for directly usage.
 
-**Note:** All results from the paper is made by **Mako.jar**, the beta version of Mako.
+**Note:** All results from the paper is made by **Mako.jar**, which can be found under /out/artifacts/Mako_jar/.
 
 #### Dependency
 
 - htsjdk (https://github.com/samtools/htsjdk): A Java API for processing high-throughput sequencing (HTS) data.
-- Python (V>=3.6): This is required for creating Mako configuration file.
+- Python (V>=3.6): This is required for creating Mako configuration file. 
+  - Required package: pysam, pandas, numpy
 
 #### Usage
 
@@ -24,7 +25,9 @@ git clone https://github.com/jiadong324/Mako.git
 samtools view ./path/to/sample.bam | python process.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName
 ```
 
-**Note:** The BAM file  **must** under your working_dir. The configuration file is *sampleName.mako.cfg*
+**Note:** The BAM file  **must** under your working_dir. 
+
+The configuration file is *sampleName.mako.cfg*. Meanwhile, a insert size distribution figure *sampleName.config.png* is created.
 
 Example of Mako configuration file for HG00514
 ```
@@ -69,6 +72,25 @@ chrom=   given a specific region, for whole genome if it is not given. (e.g chr1
 Run SV discovery with Mako configuration file.
 ```
 java -jar Mako.jar fa=/path/to/ref.fa bamCfg=/path/to/sampleName.mako.cfg
+```
+
+##### Step 3: filter with CXS score (optional)
+
+```
+# Usage info
+python process.py filter -h 
+
+Usage: process.py [options]
+
+Options:
+  -h, --help  show this help message and exit
+  -i INPUT    Input Mako callset
+  -o OUT      Output of filtered Mako callset by CXS
+  -c CXS      CXS threshold
+  -f FORMAT   output format (original, bed)
+
+# Filter with cxs>4, and output in BED format 
+python process.py filter -i /path/to/sampleName.mako.sites.txt -o /path/to/filtered_output.bed -c 4 -f bed
 ```
 
 #### Run demo data

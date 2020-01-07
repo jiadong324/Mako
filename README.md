@@ -78,7 +78,7 @@ java -jar Mako.jar fa=/path/to/ref.fa bamCfg=/path/to/sampleName.mako.cfg
 samtools view NA19240.30X.chr20.1000K-2000K.bam | python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240
 
 # Run Mako
-java -jar /path/to/Mako.jar fa=GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=NA19240.mako.cfg
+java -jar /path/to/Mako.jar fa=GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=NA19240.mako.cfg minFreq=1 chrom=chr20
 ```
 
 #### Output file format

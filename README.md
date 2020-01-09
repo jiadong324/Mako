@@ -22,10 +22,10 @@ git clone https://github.com/jiadong324/Mako.git
 ##### Step 1: create Mako configuration file
 
 ```
-samtools view ./path/to/sample.bam | python process.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName
+python process.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName
 ```
 
-**Note:** The BAM file  **must** under your working_dir. 
+**Note:** The BAM file  **must** under your working_dir.  The working_dir is default output directory of Mako results.
 
 The configuration file is *sampleName.mako.cfg*. Meanwhile, a insert size distribution figure *sampleName.config.png* is created.
 
@@ -97,7 +97,7 @@ python process.py filter -i /path/to/sampleName.mako.sites.txt -o /path/to/filte
 
 ```
 # Create configuration file
-samtools view NA19240.30X.chr20.1000K-2000K.bam | python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240
+python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240
 
 # Run Mako
 java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=/path/to/NA19240.mako.cfg minFreq=1 chrom=chr20

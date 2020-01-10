@@ -1,4 +1,7 @@
+![File_headlings](https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png)
+
 ## Mako
+
 Mako is a bottom-up guided model-free CSV detection tool. It first builds a mutational signal graph and utilizes pattern growth to detect maximal subgraphs as CSVs.
 
 ## Install and run
@@ -111,8 +114,27 @@ java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.
 
 **sampleName.mako.sites.txt:** Mako detect SVs. Additional information of each record can be found in the file heading.
 
+**sampleName.mako.BNDs.txt:** Break-ends are not able to involve in the current mutational signal graph, including inter-chromosomes.
+
+#### Parameter settings
+
+**minAf:** calculates the ratio between abnormal reads and all reads, estimating the allele frequency of signal node.
+
+**pMax:** constrains the pattern growth through adjacent edges. The actual distance on genome is calculated as *pMax* * *fragMean*. Typically, SV size is enriched at 300bp and 1000bp. Thus the distance is recommended to be larger than 1000bp. Mako uses *pMax=4* as default value if the estimated average fragment size is 500-600bp.
+
+**minFreq:** for whole genome detection, we would expect one subgraph appears at least on the half number of genomes. If you run only one chromosome, this value is recommended to be 1.
+
+**maxD:** this is used cluster signal nodes produced by abnormal paired-end alignment. And split or clipped is restricted to the same position.
+
+#### Known issues
+
+1. Please make sure the reference used for running Mako is identical to the alignment one.
+2. ...
+
 ## Contact
+
 If you have any questions, please feel free to contact: jiadong324@gmail.com
 
 ## License
 The manuscript is under review, license details will be specified later.
+

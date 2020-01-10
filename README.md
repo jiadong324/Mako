@@ -1,6 +1,6 @@
 
 
-<img src="https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png" alt="mako_logo" style="zoom:10%;" />
+<img src="https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png" alt="mako_logo" style="zoom:1%;" />
 
 ## Mako
 
@@ -12,13 +12,13 @@ Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** f
 
 **Note:** All results from the paper is made by **Mako.jar**, which can be found under /out/artifacts/Mako_jar/.
 
-#### Dependency
+### Dependency
 
 - htsjdk (https://github.com/samtools/htsjdk): A Java API for processing high-throughput sequencing (HTS) data.
 - Python (V>=3.6): This is required for creating Mako configuration file. 
   - Required package: pysam, pandas, numpy
 
-#### Usage
+### Usage
 
 ```
 git clone https://github.com/jiadong324/Mako.git
@@ -98,7 +98,7 @@ Options:
 python process.py filter -i /path/to/sampleName.mako.sites.txt -o /path/to/filtered_output.bed -c 4 -f bed
 ```
 
-#### Run demo data
+### Run demo data
 
 ```
 # Create configuration file
@@ -108,7 +108,7 @@ python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 
 java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=/path/to/NA19240.mako.cfg minFreq=1 chrom=chr20
 ```
 
-#### Output file format
+### Output file format
 
 **sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of informations. See table below for details.
 
@@ -118,7 +118,7 @@ java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.
 
 **sampleName.mako.BNDs.txt:** Break-ends are not able to involve in the current mutational signal graph, including inter-chromosomes.
 
-#### Parameter settings
+### Parameter settings
 
 **minAf:** calculates the ratio between abnormal reads and all reads, estimating the allele frequency of signal node.
 
@@ -128,7 +128,7 @@ java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.
 
 **maxD:** this is used cluster signal nodes produced by abnormal paired-end alignment. And split or clipped is restricted to the same position.
 
-#### Known issues
+### Known issues
 
 1. Please make sure the reference used for running Mako is identical to the alignment one.
 2. ...

@@ -1,4 +1,4 @@
-![File_headlings](https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png)
+![File_headlings](https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png) {:width=50% height=50%}
 
 ## Mako
 

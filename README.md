@@ -109,9 +109,9 @@ python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 
 java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=/path/to/NA19240.mako.cfg minFreq=1 chrom=chr20
 ```
 
-### Output file format
+### Output file
 
-**sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of informations.
+**sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of information. Detailed explanation can be found at https://github.com/jiadong324/Mako/tree/master/supports/File_heading.png 
 
 **sampleName.mako.sites.txt:** Mako detect SVs. Additional information of each record can be found in the file heading.
 

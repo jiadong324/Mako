@@ -525,7 +525,7 @@ public class CFSPM {
                     PseudoSuperItem psItem = new PseudoSuperItem(seqId, superitemSetIdx, j);
                     psItem.setPsSuperitemInfo(database);
                     curPattern.add(psItem);
-                   
+
                 }                
             }
             

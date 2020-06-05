@@ -64,13 +64,13 @@ fa=    Reference genome
 bamCfg=  BAM configuration file
 
 Options:
-minAf=    given the threshold for nodes to include in the signal graph (default=0.2)
-minWeight=    given the threshold for nodes to include in the signal graph (default=10)
-cutStd=  given the cutoff to determine abnormal insert size read-pairs (default=3)
-maxD=    given the maximum distance to cluster abnormal read-pairs nodes (default=readLen)
-minFreq=    given the minimum frequency to report discovered subgraphs (default=10)
-minQ=    given the minimum mapping quality of read (default=20)
-pMax=    the maximal range for adjacent edge linked node search (default=4)
+minAf=    minimum allele frequency of a node (default=0.2)
+minWeight=    minimum weight of a node (default=10)
+cutStd=  cutoff to determine abnormal insert size read-pairs (default=3)
+maxD=    maximum distance to cluster abnormal read-pairs nodes (default=readLen)
+minFreq=    minimum frequency to report discovered subgraphs (default=10)
+minQ=    minimum mapping quality of read (default=20)
+pMax=    maximal range for adjacent edge linked node search (default=4)
 chrom=   given a specific region, for whole genome if it is not given. (e.g chr1:1000-2000)
 ```
 
@@ -100,6 +100,7 @@ python process.py filter -i /path/to/sampleName.mako.sites.txt -o /path/to/filte
 
 ### Run demo data
 
+Note that the demo data is small, large minFreq is not recommended.
 ```
 # Create configuration file
 python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240
@@ -110,9 +111,7 @@ java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.
 
 ### Output file format
 
-**sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of informations. See table below for details.
-
-![File_headlings](https://github.com/jiadong324/Mako/blob/master/supports/File_headlings.png)
+**sampleName.superitems.txt:** Mako created nodes for mutational signal graph. Each record in the file contains 19 columns of informations.
 
 **sampleName.mako.sites.txt:** Mako detect SVs. Additional information of each record can be found in the file heading.
 

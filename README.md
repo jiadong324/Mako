@@ -6,6 +6,8 @@
 
 Mako is a bottom-up guided model-free CSV detection tool. It first builds a mutational signal graph and utilizes pattern growth to detect maximal subgraphs as CSVs.
 
+Please check the [wiki](https://github.com/jiadong324/Mako/wiki) page for more details.
+
 ## Install and run
 
 Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** for directly usage.

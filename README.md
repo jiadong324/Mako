@@ -10,9 +10,9 @@ Please check the [wiki](https://github.com/jiadong324/Mako/wiki) page for more d
 
 ## Install and run
 
-Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** for directly usage.
+Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** for directly usage. See [Release](https://github.com/jiadong324/Mako/releases).
 
-**Note:** All results from the paper is made by **Mako.jar**, which can be found under /out/artifacts/Mako_jar/.
+**Note:** All results from the paper is made by **Mako.jar**, which is a beta version.
 
 ### Dependency
 

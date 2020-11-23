@@ -27,7 +27,7 @@ Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** f
 **NOTE:** BAM file should under your working directory.
 ```
 # Configuration
-python process.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName -f /path/to/ref.fa.fai
+python ParseMako.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName -f /path/to/ref.fa.fai
 
 # Detection
 java -jar Mako.jar -R /path/to/ref.fa -F /path/to/sampleName.mako.cfg

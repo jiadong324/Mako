@@ -1,6 +1,6 @@
 
 
-<img src="https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png" alt="mako_logo" width="20%" height="20%" align=center/>
+<img src="https://github.com/jiadong324/Mako/blob/master/supports/mako_logo.png" alt="mako_logo" width="30%" height="30%" align=center/>
 
 ## Mako
 

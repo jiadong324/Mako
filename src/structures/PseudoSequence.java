@@ -115,7 +115,7 @@ public class PseudoSequence {
         return (index + firstItemset) == this.seqSize -1;
     }
     
-    public SuperItem getItemAtItemsetAt(int indexItem, int indexItemset, Sequence sequence){
+    public Node getItemAtItemsetAt(int indexItem, int indexItemset, Sequence sequence){
         if(isFirstItemset(indexItemset)){
             return sequence.get(indexItemset + firstItemset).get(indexItem + firstItem);
         }else{
@@ -124,9 +124,9 @@ public class PseudoSequence {
     }
     
     public int indexOf(int indexItemset, String item, Sequence sequence){
-        List<SuperItem> itemset = sequence.get(indexItemset );
+        List<Node> itemset = sequence.get(indexItemset );
         for(int i = 0; i < itemset.size() ; i++){
-            SuperItem superitemAtIdx = getItemAtItemsetAt(i, indexItemset, sequence);
+            Node superitemAtIdx = getItemAtItemsetAt(i, indexItemset, sequence);
             String superitemType = superitemAtIdx.type;
             if(superitemType.equals(item)){
                 return i ;

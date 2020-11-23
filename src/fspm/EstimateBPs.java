@@ -52,7 +52,6 @@ public class EstimateBPs {
             if (pattern.isCrossSup()) {
                 linkType += ";Cross";
             }
-//            Candidate sv = new Candidate(linkType, pattern, database);
             Candidate sv = new Candidate(linkType, pattern, null, null, database);
             sv.writeSV(pattern, regionWriter, idxNameMap);
                        
@@ -159,45 +158,37 @@ public class EstimateBPs {
 
         }                
     }
-   /**
-    * Call SVs from unlinkable patterns, we only check cross match of these patterns
-    * @param unLinkedPattern
-    * @param mergedPatterns
-    * @param database
-    * @param idxNameMap
-    * @param regionWriter
-    * @throws IOException 
-    */
-    public void callSVFromUnlinked(Set<Integer> unLinkedPattern, List<PseudoSequentialPattern> mergedPatterns, SequenceDatabase database, String[] idxNameMap,
-                                   BufferedWriter regionWriter) throws IOException{
-//        int localAlignedSV = 0;
-        
-        for (Integer id : unLinkedPattern){
-            String linkType = "nolinks";
-            
-            PseudoSequentialPattern pattern = mergedPatterns.get(id);
-                                    
-            int[] arpBasedEstimateInfo = pattern.unlinkedArpPatternPosEstimate(database, 20);
-            
-            pattern.doCrossLink(database);      
-            
-            int[] oemEstimatePos = pattern.oemPatternPosEstimate(database);
-            int[] crossLinkInfo = pattern.getCrossInfo();
-            
-            boolean isCrossSup = pattern.isCrossSup();
 
-            if (isCrossSup && pattern.getCrossedLen() >= 20){
-                linkType += ";Cross";
-                Candidate sv = new Candidate(crossLinkInfo[0], crossLinkInfo[1], linkType, pattern.toTypeString(database));
-                sv.writeUnlinkedSV(pattern, regionWriter, arpBasedEstimateInfo[2], idxNameMap);
-            }
-            else if (oemEstimatePos[0] > 0 || oemEstimatePos[1] > 0) {
-                linkType += ";OEM";
-                Candidate sv = new Candidate(oemEstimatePos[0], oemEstimatePos[1], linkType, pattern.toTypeString(database));
-                sv.writeUnlinkedSV(pattern, regionWriter, oemEstimatePos[2], idxNameMap);
-            }
-        }        
-    }
+//    public void callSVFromUnlinked(Set<Integer> unLinkedPattern, List<PseudoSequentialPattern> mergedPatterns, SequenceDatabase database, String[] idxNameMap,
+//                                   BufferedWriter regionWriter) throws IOException{
+////        int localAlignedSV = 0;
+//
+//        for (Integer id : unLinkedPattern){
+//            String linkType = "nolinks";
+//
+//            PseudoSequentialPattern pattern = mergedPatterns.get(id);
+//
+//            int[] arpBasedEstimateInfo = pattern.unlinkedArpPatternPosEstimate(database, 20);
+//
+//            pattern.doCrossLink(database);
+//
+//            int[] oemEstimatePos = pattern.oemPatternPosEstimate(database);
+//            int[] crossLinkInfo = pattern.getCrossInfo();
+//
+//            boolean isCrossSup = pattern.isCrossSup();
+//
+//            if (isCrossSup && pattern.getCrossedLen() >= 20){
+//                linkType += ";Cross";
+//                Candidate sv = new Candidate(crossLinkInfo[0], crossLinkInfo[1], linkType, pattern.toTypeString(database));
+//                sv.writeUnlinkedSV(pattern, regionWriter, arpBasedEstimateInfo[2], idxNameMap);
+//            }
+//            else if (oemEstimatePos[0] > 0 || oemEstimatePos[1] > 0) {
+//                linkType += ";OEM";
+//                Candidate sv = new Candidate(oemEstimatePos[0], oemEstimatePos[1], linkType, pattern.toTypeString(database));
+//                sv.writeUnlinkedSV(pattern, regionWriter, oemEstimatePos[2], idxNameMap);
+//            }
+//        }
+//    }
 
     private void addNonDuplicatedLinks(List<Link> links, Link alink) {
         for (Link thisLink : links) {

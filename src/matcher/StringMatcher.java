@@ -6,8 +6,9 @@
 package matcher;
 
 import fspm.PseudoSuperItem;
+import structures.Node;
 import structures.SequenceDatabase;
-import structures.SuperItem;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,7 +83,7 @@ public class StringMatcher {
                     }else{
                         newRightBpAtRef = maxMatchAtRef[1] - (adjustedBpAtRead[1] - maxMatchAtRead[3]);
                     }
-                    SuperItem superitem = superitems.get(i).getSuperItem(database);
+                    Node superitem = superitems.get(i).getSuperItem(database);
                     
                     if (newLeftBpAtRef > newRightBpAtRef){
                         continue;
@@ -753,12 +754,12 @@ public class StringMatcher {
             });
             
             PseudoSuperItem psLeftItem = superItems.get(identitys.get(0).seqId);
-            SuperItem superItemLeft = psLeftItem.getSuperItem(database);               
-            pos[0] = superItemLeft.getPos();
+            Node nodeLeft = psLeftItem.getSuperItem(database);
+            pos[0] = nodeLeft.getPos();
             
             PseudoSuperItem psRightItem = superItems.get(identitys.get(identitys.size() - 1).seqId);
-            SuperItem superItemRight = psRightItem.getSuperItem(database); 
-            pos[1] = superItemRight.getPos();
+            Node nodeRight = psRightItem.getSuperItem(database);
+            pos[1] = nodeRight.getPos();
             
         }        
         if (reverseSharedStrings!= null){
@@ -771,12 +772,12 @@ public class StringMatcher {
             });
             
             PseudoSuperItem psLeftItem = superItems.get(identitys.get(0).seqId);
-            SuperItem superItemLeft = psLeftItem.getSuperItem(database);               
-            pos[0] = superItemLeft.getPos();
+            Node nodeLeft = psLeftItem.getSuperItem(database);
+            pos[0] = nodeLeft.getPos();
             
             PseudoSuperItem psRightItem = superItems.get(identitys.get(identitys.size() - 1).seqId);
-            SuperItem superItemRight = psRightItem.getSuperItem(database); 
-            pos[1] = superItemRight.getPos();
+            Node nodeRight = psRightItem.getSuperItem(database);
+            pos[1] = nodeRight.getPos();
         } 
         return pos;
     }
@@ -785,10 +786,10 @@ public class StringMatcher {
             StringBuilder sb = new StringBuilder();
             for (StringIdentity id : forwardSharedStrings.strIdentitys){
                 PseudoSuperItem psItem = superItems.get(id.seqId);
-                SuperItem superItem = psItem.getSuperItem(database);
-                sb.append(superItem.getType());
+                Node node = psItem.getSuperItem(database);
+                sb.append(node.getType());
                 sb.append(",");
-                sb.append(superItem.getPos());
+                sb.append(node.getPos());
                 sb.append("\t");
             }
             sb.append(forwardSharedStrings.commonString);
@@ -800,10 +801,10 @@ public class StringMatcher {
             StringBuilder sb = new StringBuilder();
             for (StringIdentity id : reverseSharedStrings.strIdentitys){
                 PseudoSuperItem psItem = superItems.get(id.seqId);
-                SuperItem superItem = psItem.getSuperItem(database);
-                sb.append(superItem.getType());
+                Node node = psItem.getSuperItem(database);
+                sb.append(node.getType());
                 sb.append(",");
-                sb.append(superItem.getPos());
+                sb.append(node.getPos());
                 sb.append("\t");
             }
             sb.append(reverseSharedStrings.commonString);

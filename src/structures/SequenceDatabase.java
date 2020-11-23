@@ -34,9 +34,9 @@ public class SequenceDatabase {
      */
     public void loadSequencesFromFile(String superitemFilePath, Double minAf, int minWeight) throws IOException{
 //        System.out.println("Start loading mutational database.....");
-        System.out.println("\nLoading SuperItem sequence database and formatting...");
+        System.out.println("\nLoading node and create signal graph ...");
         
-        List<List<SuperItem>> superitemInput = new ArrayList<>();
+        List<List<Node>> superitemInput = new ArrayList<>();
         Map<String, Integer> seqChromMap = new HashMap<>();
         
         String thisLine;
@@ -68,13 +68,13 @@ public class SequenceDatabase {
             }
             if (!SuperItemType.contains("ARP")&& (ratio >= minAf) && (weight >= 5)){
 
-                SuperItem superitem = new SuperItem(tokens);
+                Node superitem = new Node(tokens);
                 superitem.setChromName(chrom);
                 superitemInput.get(curSeqIdx).add(superitem);
 
             }else if (SuperItemType.contains("ARP") && (ratio >= minAf || weight >= minWeight)){
 
-                SuperItem superitem = new SuperItem(tokens);
+                Node superitem = new Node(tokens);
                 superitem.setChromName(chrom);
                 superitemInput.get(curSeqIdx).add(superitem);
             }
@@ -89,25 +89,25 @@ public class SequenceDatabase {
      * This is used to re-format the database, in case of <(AB)(C)> happens.
      * @param superitemSeqs 
      */
-    private void databaseFormatter(List<List<SuperItem>> superitemSeqs) {       
+    private void databaseFormatter(List<List<Node>> superitemSeqs) {
         
 //        superitemTypeCount(SIsequences);
         for (int i = 0; i < superitemSeqs.size(); i ++){
             Sequence sequence = new Sequence(i);
-            List<SuperItem> smallIndels = new ArrayList<>();
-            List<SuperItem> SIlist = superitemSeqs.get(i);
+            List<Node> smallIndels = new ArrayList<>();
+            List<Node> SIlist = superitemSeqs.get(i);
             Collections.sort(SIlist);
 //            int sequenceSize = 0;
-            List<SuperItem> itemset = new ArrayList<>();
-            for (SuperItem si : SIlist){
+            List<Node> itemset = new ArrayList<>();
+            for (Node si : SIlist){
                 if (si.isSmallIndel()){
                     smallIndels.add(si);
                     continue;
                 } 
                 if (!smallIndels.isEmpty()){
-                    SuperItem indelSuperItem = smallIndels.get(smallIndels.size() - 1);
-                    int indelSuperItemStartPos = indelSuperItem.getPos();
-                    int indelSuperItemEndPos = indelSuperItem.getSplitAlignPos();
+                    Node indelNode = smallIndels.get(smallIndels.size() - 1);
+                    int indelSuperItemStartPos = indelNode.getPos();
+                    int indelSuperItemEndPos = indelNode.getSplitAlignPos();
                     
                     if (itemset.isEmpty()){                    
                         if (si.getPos() < indelSuperItemEndPos && si.getPos() > indelSuperItemStartPos){
@@ -156,7 +156,7 @@ public class SequenceDatabase {
     }
     
     /**
-     * Call Indels from SuperItem
+     * Call Indels from Node
      * @throws IOException 
      */
     private void outputIndels(BufferedWriter indelWriter, String[] tokens, double ratio) throws IOException{
@@ -198,7 +198,6 @@ public class SequenceDatabase {
         double meansize = ((float)size) / ((float)sequences.size());
         System.out.println("Average sequence size : " + meansize);
         System.out.println("Time: " + (endTime - startTime) + "ms");
-        System.out.println("Memory usage: " + MemoryLogger.getInstance().getMaxMemory());
         System.out.println("================================================\n");
         
     }

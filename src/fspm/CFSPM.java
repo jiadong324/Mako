@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import readers.FileReader;
+import utils.FileReader;
 
 import utils.MemoryLogger;
 import utils.SuperItemLink;
@@ -34,15 +34,11 @@ public class CFSPM {
     private long startTime;
     private long endTime;
     
-    final private int minsuppAbsolute;
+    final private int minsuppAbsolute = 1;
 
-    BufferedWriter rawPatternWriter = null;
-    BufferedWriter idWriter;
-    BufferedWriter intMeaWriter;
-    StringMatcher strMatcher;
-    
-    boolean showPatternIdentifiers = false;
-    boolean hasMaskRegion = false;
+    private BufferedWriter rawPatternWriter;
+
+    private boolean hasMaskRegion = false;
     
     private int patternCount;
 //    private final double confAF; // Minimum AF for a Super-Item to estimate breakpoints
@@ -53,16 +49,26 @@ public class CFSPM {
     final private List<List<PseudoSequentialPattern>> patternCandidates = new ArrayList<>();
      
     
-    String[] chrIdxNameMap;
+    private String[] chrIdxNameMap;
     final private int patternSpanMaxRegion;
     private SequenceDatabase database;
-    private Map<String, List<ItemSeqIdentifier>> itemAppearMap;
+
     private Map<String, List<int[]>> maskedRegion;
       
     
-    public CFSPM(int minSup, int maxRegionSpan){
-        minsuppAbsolute = minSup;
+    public CFSPM(int maxRegionSpan, String[] idxChrMap, String maskFile){
         patternSpanMaxRegion = maxRegionSpan;
+        chrIdxNameMap = idxChrMap;
+        if (maskFile != null){
+            try {
+                setMaskRegion(maskFile);
+                hasMaskRegion = true;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
 
     }
     
@@ -83,7 +89,7 @@ public class CFSPM {
         this.database = database;
         startTime = System.currentTimeMillis();
                         
-        System.out.println("Loading reference genome frome file ....");
+//        System.out.println("Loading reference genome frome file ....");
         FileReader myReader = new FileReader();
         ReferenceSequenceFile refSeqFile = myReader.readFastaFile(faFilePath);
               
@@ -115,25 +121,25 @@ public class CFSPM {
             rawPatternWriter = new BufferedWriter(new FileWriter(rawPatternOut));
         }
         // Infomation of single superitem
-        System.out.println("Collect information of single superitem .....");
-        itemAppearMap = findSequencesContainItems(database);
+
+        Map<String, List<NodeSeqIdentifier>> itemAppearMap = findSequencesContainItems(database);
         
         /**
          * Start creating initial pseudo-projected database.
          */
-        System.out.println("Start creating initial pseudo sequence database ....");
+        System.out.println("[Call] Start creating initial pseudo graph projection ....");
         List<PseudoSequence> initialContext = new ArrayList<>();
         for (Sequence sequence : database.getSequences()){
             if (sequence.size() != 0){
                 initialContext.add(new PseudoSequence(sequence, 0, 0, 0));
             }
         }
-        for (Entry<String, List<ItemSeqIdentifier>> entry : itemAppearMap.entrySet()){
+        for (Entry<String, List<NodeSeqIdentifier>> entry : itemAppearMap.entrySet()){
             String item = entry.getKey();
             Map<Integer, PseudoSequentialPattern> prefixTracker = new HashMap<>();
             if (entry.getValue().size() >= minsuppAbsolute){
 
-                List<ItemSeqIdentifier> itemAppearIdx = entry.getValue();
+                List<NodeSeqIdentifier> itemAppearIdx = entry.getValue();
                 List<PseudoSequence> projectedDatabase = buildProjectedContext(prefixTracker, item, initialContext, false);
                 
                 // Create a prefix with initial sequence ID 0
@@ -148,12 +154,20 @@ public class CFSPM {
         }
         
     }
-    
+
+    /**
+     * Depth first recursion to find patterns.
+     * @param prefixTracker
+     * @param prefix
+     * @param psSeqDatabase
+     * @throws IOException
+     */
     
     private void depthFirstRecursion(Map<Integer, PseudoSequentialPattern> prefixTracker, SequentialPattern prefix, List<PseudoSequence> psSeqDatabase) throws IOException{
         Set<Pair> pairs = itemCountsInProjectedDB(prefix, psSeqDatabase);
         for (Pair pair : pairs){
-            if (pair.getCount() >= minsuppAbsolute){                                               
+            // If minSup=1, the stack might overflow due to unstoppable recursion.
+            if (pair.getCount() >= minsuppAbsolute && prefix.length() <= 50){
                 SequentialPattern newPrefix;
                 // If the frequent item is of form (_A), append it to the last itemset of the current prefix. 
                 if(pair.isPostfix()){
@@ -191,7 +205,7 @@ public class CFSPM {
         for (PseudoSequence sequence : sequences){
             Sequence oriSequence = database.getSequenceByID(sequence.getId());
             for (int j = 0; j < sequence.getSizeOfItemsetAt(0, oriSequence); j++){
-                SuperItem si = sequence.getItemAtItemsetAt(j, 0, oriSequence);
+                Node si = sequence.getItemAtItemsetAt(j, 0, oriSequence);
                     String item = si.getType();
                 
                 Pair paire = new Pair(sequence.isPostfix(0), item);
@@ -214,18 +228,18 @@ public class CFSPM {
     }
     
     
-    private Map<String, List<ItemSeqIdentifier>> findSequencesContainItems(SequenceDatabase database) {
-        Map<String, List<ItemSeqIdentifier>> itemAppearMap = new HashMap<>();
+    private Map<String, List<NodeSeqIdentifier>> findSequencesContainItems(SequenceDatabase database) {
+        Map<String, List<NodeSeqIdentifier>> itemAppearMap = new HashMap<>();
         for(Sequence sequence : database.getSequences()){
             int sequenceID = sequence.getId();
             for(int i = 0; i < sequence.getItemsets().size();i++){
-                List<SuperItem> itemset = sequence.getItemsets().get(i);
+                List<Node> itemset = sequence.getItemsets().get(i);
                 for(int j = 0; j < itemset.size(); j ++){
-                    SuperItem superitem = itemset.get(j);
+                    Node superitem = itemset.get(j);
 
-                    ItemSeqIdentifier itemIdentity = new ItemSeqIdentifier(sequenceID, sequenceID, i, j);
+                    NodeSeqIdentifier itemIdentity = new NodeSeqIdentifier(sequenceID, sequenceID, i, j);
                     String sitype = superitem.getType();
-                    List<ItemSeqIdentifier> itemAppearIdx = itemAppearMap.get(sitype);
+                    List<NodeSeqIdentifier> itemAppearIdx = itemAppearMap.get(sitype);
                     if(itemAppearIdx == null){
                         itemAppearIdx = new ArrayList<>();
                         itemAppearIdx.add(itemIdentity);
@@ -265,21 +279,21 @@ public class CFSPM {
                     int idxOfItemInItemset = psSequence.indexOf(itemsetIdx, item, oriSequence);
                     
                     if (idxOfItemInItemset != -1 && psSequence.isPostfix(itemsetIdx) == inSuffix){
-                        SuperItem curSuperItem = oriSequence.superItemAtPos(itemsetIdx, idxOfItemInItemset);
-                        PseudoSequentialPattern curPsPattern = prefixTracker.get(curSuperItem.getPos());
+                        Node curNode = oriSequence.superItemAtPos(itemsetIdx, idxOfItemInItemset);
+                        PseudoSequentialPattern curPsPattern = prefixTracker.get(curNode.getPos());
                         
                         if (idxOfItemInItemset != psSequence.getSizeOfItemsetAt(itemsetIdx, oriSequence) - 1){
                             PseudoSequence newSequence = new PseudoSequence(psSequence, itemsetIdx, idxOfItemInItemset + 1);
-                            newSequence.setGenomeStartPos(curSuperItem.getPos());
+                            newSequence.setGenomeStartPos(curNode.getPos());
                             boolean nextSuperItemInRange = ableToBuildProjection(curPsPattern, i + 1, oriSequence, newSequence);
                             
-                            if (curSuperItem.isARPsuperitem()){
-//                                nextSuperItemInRange = searchReadPairLinkedSuperItem(i, curSuperItem, oriSequence, psSequence.getSize());
+                            if (curNode.isARPsuperitem()){
+//                                nextSuperItemInRange = searchReadPairLinkedSuperItem(i, curNode, oriSequence, psSequence.getSize());
                                 if (i + 10 < psSequence.getSize()){
                                     int deeperSearchRange = i + 10;
                                     for (int k = i + 1; k < deeperSearchRange; k++){
-                                        SuperItem si = oriSequence.superItemAtPos(k, 0);
-                                        boolean isLinkable = patternGrowthReadPairLink(curSuperItem, si);
+                                        Node si = oriSequence.superItemAtPos(k, 0);
+                                        boolean isLinkable = patternGrowthReadPairLink(curNode, si);
                                         if (isLinkable) {
                                             nextSuperItemInRange = isLinkable;
                                             break;
@@ -295,17 +309,17 @@ public class CFSPM {
                         }
                         else if (itemsetIdx != psSequence.getSize() - 1){
                             PseudoSequence newSequence = new PseudoSequence(psSequence, itemsetIdx + 1, 0);
-                            newSequence.setGenomeStartPos(curSuperItem.getPos());
-//                            SuperItem nextSuperItem = oriSequence.superItemAtPos(i + 1, 0);
+                            newSequence.setGenomeStartPos(curNode.getPos());
+//                            Node nextSuperItem = oriSequence.superItemAtPos(i + 1, 0);
 
                             boolean nextSuperItemInRange = ableToBuildProjection(curPsPattern, i + 1, oriSequence, newSequence);
-                            if (curSuperItem.isARPsuperitem()){
-//                                nextSuperItemInRange = searchReadPairLinkedSuperItem(i, curSuperItem, oriSequence, psSequence.getSize());
+                            if (curNode.isARPsuperitem()){
+//                                nextSuperItemInRange = searchReadPairLinkedSuperItem(i, curNode, oriSequence, psSequence.getSize());
                                 if (i + 10 < psSequence.getSize()){
                                     int deeperSearchRange = i + 10;
                                     for (int k = i + 1; k < deeperSearchRange; k++){
-                                        SuperItem si = oriSequence.superItemAtPos(k, 0);
-                                        boolean isLinkable = patternGrowthReadPairLink(curSuperItem, si);
+                                        Node si = oriSequence.superItemAtPos(k, 0);
+                                        boolean isLinkable = patternGrowthReadPairLink(curNode, si);
                                         if (isLinkable){
                                             nextSuperItemInRange = isLinkable;
                                             break;
@@ -331,9 +345,9 @@ public class CFSPM {
                 int idxOfItemInItemset = psSequence.indexOf(itemsetIdx, item, oriSequence);
                 
                 if (idxOfItemInItemset != -1 && psSequence.isPostfix(itemsetIdx) == inSuffix){
-                    SuperItem curSuperItem = oriSequence.superItemAtPos(itemsetIdx + psSequence.getFirstItemsetIdx(), idxOfItemInItemset); 
+                    Node curNode = oriSequence.superItemAtPos(itemsetIdx + psSequence.getFirstItemsetIdx(), idxOfItemInItemset);
 
-                    PseudoSequentialPattern curPsPattern = prefixTracker.get(curSuperItem.getPos());
+                    PseudoSequentialPattern curPsPattern = prefixTracker.get(curNode.getPos());
 
 //
 
@@ -342,13 +356,13 @@ public class CFSPM {
                         int nextSuperItemIdx = psSequence.getFirstItemsetIdx() + 1;
                         boolean nextSuperItemInRange = ableToBuildProjection(curPsPattern, nextSuperItemIdx, oriSequence, psSequence);
                         
-                        if (curSuperItem.isARPsuperitem()){
-//                            nextSuperItemInRange = searchReadPairLinkedSuperItem(nextSuperItemIdx, curSuperItem, oriSequence, psSequence.getSize());
+                        if (curNode.isARPsuperitem()){
+//                            nextSuperItemInRange = searchReadPairLinkedSuperItem(nextSuperItemIdx, curNode, oriSequence, psSequence.getSize());
                             if (nextSuperItemIdx + 10 < psSequence.getSize()){
                                 int deeperSearchRange = nextSuperItemIdx + 10;
                                 for (int k = nextSuperItemIdx + 1; k < deeperSearchRange; k++){
-                                    SuperItem si = oriSequence.superItemAtPos(k, 0);
-                                    boolean isLinkable = patternGrowthReadPairLink(curSuperItem, si);
+                                    Node si = oriSequence.superItemAtPos(k, 0);
+                                    boolean isLinkable = patternGrowthReadPairLink(curNode, si);
                                     if (isLinkable){
                                         nextSuperItemInRange = isLinkable;
                                         break;
@@ -363,13 +377,13 @@ public class CFSPM {
                             }
                         }                 
                     }
-                    // There is only one SuperItem at each genome position.
+                    // There is only one Node at each genome position.
                     else if (itemsetIdx != psSequence.getSize() - 1){
                         int nextSuperItemIdx = psSequence.getFirstItemsetIdx() + 1;
                         boolean nextSuperItemInRange = ableToBuildProjection(curPsPattern, nextSuperItemIdx, oriSequence, psSequence);
 //
-//                        if (curSuperItem.isARPsuperitem()) {
-//                            nextSuperItemInRange = searchReadPairLinkedSuperItem(nextSuperItemIdx, curSuperItem, oriSequence, psSequence.getSize());
+//                        if (curNode.isARPsuperitem()) {
+//                            nextSuperItemInRange = searchReadPairLinkedSuperItem(nextSuperItemIdx, curNode, oriSequence, psSequence.getSize());
 //                        }
                         if (nextSuperItemInRange){
                             PseudoSequence newSequence = new PseudoSequence(psSequence, itemsetIdx + 1, 0);
@@ -384,11 +398,11 @@ public class CFSPM {
         return newPseudoProjectedDatabase;
     }
 
-    private boolean searchReadPairLinkedSuperItem(int curIdx, SuperItem curSuperitem, Sequence sequence, int psSeqSize){
+    private boolean searchReadPairLinkedSuperItem(int curIdx, Node curSuperitem, Sequence sequence, int psSeqSize){
         boolean hasLinkedNode = false;
         int range = curSuperitem.getMateInterval()[1];
         for (int i = curIdx + 1; i < psSeqSize; i++){
-            SuperItem si = sequence.superItemAtPos(i, 0);
+            Node si = sequence.superItemAtPos(i, 0);
             if (si.getPos() < range) {
                 hasLinkedNode = patternGrowthReadPairLink(curSuperitem, si);
             }
@@ -408,9 +422,9 @@ public class CFSPM {
      */
     private boolean ableToBuildProjection(PseudoSequentialPattern psPattern, int nextItemIdx, Sequence oriSequence, PseudoSequence psSequence){
         boolean isNextItemInRange = false;
-        SuperItem nextSuperItem = oriSequence.superItemAtPos(nextItemIdx, 0);
+        Node nextNode = oriSequence.superItemAtPos(nextItemIdx, 0);
         int genomeStartPos = psSequence.getGenomeStartPos();
-        int spannedRegion = nextSuperItem.getPos() - genomeStartPos;
+        int spannedRegion = nextNode.getPos() - genomeStartPos;
 
 
         if (spannedRegion <= patternSpanMaxRegion){
@@ -422,7 +436,7 @@ public class CFSPM {
 
     /**
      * The pattern can be grew through read pair links.
-     * Search if SuperItem in current pattern can be linked to other SuperItem on this sequence.
+     * Search if Node in current pattern can be linked to other Node on this sequence.
      * @param psPattern
      * @param nextItemIdx
      * @param oriSequence
@@ -434,13 +448,13 @@ public class CFSPM {
             return false;
         }
         int oriSeqSize = oriSequence.size();
-        List<SuperItem> superitems = psPattern.getSuperItemsOfPattern(database);                                        
-        for (SuperItem curSi : superitems){
+        List<Node> superitems = psPattern.getSuperItemsOfPattern(database);
+        for (Node curSi : superitems){
 
             if (curSi.isARPsuperitem()){
                 int farestSearchRange = curSi.getSuperitemMateRegion().end;                                
                 for (int k = nextItemIdx; k < oriSeqSize; k++){                    
-                    SuperItem newSi = oriSequence.superItemAtPos(k, 0);
+                    Node newSi = oriSequence.superItemAtPos(k, 0);
                     if (newSi.getPos() > farestSearchRange){
                         break;
                     }
@@ -455,13 +469,13 @@ public class CFSPM {
     }
     /**
      * Aims at using read-pair info for pattern growth.
-     * @param curSuperItem
-     * @param nextSuperItem
+     * @param curNode
+     * @param nextNode
      * @return 
      */
-    private boolean patternGrowthReadPairLink(SuperItem curSuperItem, SuperItem nextSuperItem){
+    private boolean patternGrowthReadPairLink(Node curNode, Node nextNode){
         SuperItemLink linker = new SuperItemLink();
-        return linker.twoSuperItemLinkCheck(curSuperItem, nextSuperItem);
+        return linker.twoSuperItemLinkCheck(curNode, nextNode);
     }
            
 
@@ -511,9 +525,9 @@ public class CFSPM {
     private void savePatternCandidate(Map<Integer, PseudoSequentialPattern> prefixTracker, SequentialPattern prefix){
         int numOfTypes = prefix.getNumOfTypes();
         int patternLength = prefix.length();
-                
-        List<ItemSeqIdentifier> itemSeqIdentifiers = prefix.getItemAppear();
-        for (ItemSeqIdentifier itemIdentity : itemSeqIdentifiers){
+
+        List<NodeSeqIdentifier> nodeSeqIdentifiers = prefix.getItemAppear();
+        for (NodeSeqIdentifier itemIdentity : nodeSeqIdentifiers){
             List<PseudoSuperItem> curPattern = new ArrayList<>();
             int seqId = itemIdentity.getSeqID();
             int superitemSetStartIdx = itemIdentity.getSubSeqID() - patternLength + 1;     
@@ -561,15 +575,15 @@ public class CFSPM {
      * @return 
      */
     public int numOfSupportARPs(PseudoSequentialPattern pattern){
-        List<SuperItem> superitemList = pattern.getSuperItemsOfPattern(database);
+        List<Node> superitemList = pattern.getSuperItemsOfPattern(database);
         int length = superitemList.size();
         int maximuSup = 0;
         for (int i = 0; i < length; i++){
             int supportedARPs = 0;
             for (int j = 0; j < length; j ++){
                 if (i != j){
-                    SuperItem superitemOne = pattern.getSuperItemFromOriginal(database, i);
-                    SuperItem superitemTwo = pattern.getSuperItemFromOriginal(database, j);
+                    Node superitemOne = pattern.getSuperItemFromOriginal(database, i);
+                    Node superitemTwo = pattern.getSuperItemFromOriginal(database, j);
 
                     String[] qnameOneByteList = superitemOne.getQNames();
                     String[] qnameTwoByteList = superitemTwo.getQNames();
@@ -597,16 +611,7 @@ public class CFSPM {
         
         return maximuSup;
     }
-    
-   
-    public void setParams(String[] idxChrMap, String maskFile) throws IOException{
-        System.out.println("Loading default excludable regions ....");
-        chrIdxNameMap = idxChrMap;   
-        if (maskFile != null){
-            setMaskRegion(maskFile);
-            hasMaskRegion = true;
-        }                
-    }
+
     
     public void setMaskRegion(String maskFile) throws IOException{
         maskedRegion = new HashMap<>();

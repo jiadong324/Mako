@@ -16,11 +16,11 @@ public class Sequence {
      * A sequence is like <(ARP_LARGE_INSERT)(MS)(SM)(ARP_LARGE_INSERT)>
      * There might be several superitems in a set
      */
-    private List<List<SuperItem>> itemsets = new ArrayList<List<SuperItem>>();
+    private List<List<Node>> itemsets = new ArrayList<List<Node>>();
     /** Each sequence has an identical id */
     private int id;
     
-    private List<SuperItem> smallIndelSuperitem = new ArrayList<SuperItem>();
+    private List<Node> smallIndelSuperitem = new ArrayList<Node>();
     
     /**
      * Sequence constructor
@@ -33,7 +33,7 @@ public class Sequence {
      * Add a new superitem-set to the sequence.
      * @param itemset 
      */
-    public void addItemset(List<SuperItem> itemset){
+    public void addItemset(List<Node> itemset){
         itemsets.add(itemset);
     }
     /**
@@ -41,9 +41,9 @@ public class Sequence {
      */
     public String sequence2String(){
         StringBuilder r = new StringBuilder("");
-        for (List<SuperItem> itemset : itemsets){
+        for (List<Node> itemset : itemsets){
             r.append('(');
-            for (SuperItem item : itemset){
+            for (Node item : itemset){
                 r.append(item.type);
                 r.append(' ');
             }
@@ -58,19 +58,19 @@ public class Sequence {
         return id;
     }
     /** Return all superitem-sets in the sequence */
-    public List<List<SuperItem>> getItemsets(){
+    public List<List<Node>> getItemsets(){
         return itemsets;
     }
     public Sequence getSubSequence(int itemsetIdx){
         Sequence newSequence = new Sequence(getId());
-        List<List<SuperItem>> newItemsets = itemsets.subList(itemsetIdx, itemsets.size());
+        List<List<Node>> newItemsets = itemsets.subList(itemsetIdx, itemsets.size());
         newSequence.itemsets = newItemsets;
         return newSequence;
     }
     
     
     /** Get an superitem-sets at a given position in the sequence*/
-    public List<SuperItem> get(int idx){
+    public List<Node> get(int idx){
         return itemsets.get(idx);
     }
     /** Get the size of this sequence, number of superitem-sets*/
@@ -78,30 +78,30 @@ public class Sequence {
         return itemsets.size();
     }
     
-    public void setSmallIndelSuperitem(List<SuperItem> alist){
+    public void setSmallIndelSuperitem(List<Node> alist){
         smallIndelSuperitem = alist;
     }
-    public List<SuperItem> getLastSet(){
+    public List<Node> getLastSet(){
         return itemsets.get(itemsets.size());
     }
     
-    public SuperItem superItemAtPos(int indexItemset, int indexItem){
-        List<SuperItem> superitemSet = get(indexItemset);
+    public Node superItemAtPos(int indexItemset, int indexItem){
+        List<Node> superitemSet = get(indexItemset);
         return superitemSet.get(indexItem);
     }
     public Sequence removeInFreSuperitemFromSequence(Map<String, Integer> superitemTypeCount, double relativeMinSup){
         Sequence sequence = new Sequence(getId());
-        for (List<SuperItem> itemset : itemsets){
-            List<SuperItem> newItemset = removeInFreSuperitemFromItemset(itemset, superitemTypeCount, relativeMinSup);
+        for (List<Node> itemset : itemsets){
+            List<Node> newItemset = removeInFreSuperitemFromItemset(itemset, superitemTypeCount, relativeMinSup);
             if(newItemset.size() != 0){
                 sequence.addItemset(newItemset);
             }
         }
         return sequence;
     }
-    public List<SuperItem> removeInFreSuperitemFromItemset(List<SuperItem> itemset, Map<String, Integer> superitemTypeCount, double relativeMinSup){
-        List<SuperItem> newItemset = new ArrayList<SuperItem>();       
-        for (SuperItem superitem : itemset){
+    public List<Node> removeInFreSuperitemFromItemset(List<Node> itemset, Map<String, Integer> superitemTypeCount, double relativeMinSup){
+        List<Node> newItemset = new ArrayList<Node>();
+        for (Node superitem : itemset){
             String superitemType = superitem.type;
             int support = superitemTypeCount.get(superitemType);
             if (support >= relativeMinSup){

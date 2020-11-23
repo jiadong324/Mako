@@ -6,7 +6,7 @@
 package fspm;
 
 import structures.SequenceDatabase;
-import structures.SuperItem;
+import structures.Node;
 import htsjdk.samtools.QueryInterval;
 import htsjdk.samtools.reference.ReferenceSequenceFile;
 import java.io.BufferedWriter;
@@ -50,7 +50,7 @@ public class Merge {
      */
     public void wgsPatternMerge(String mergedPatternOut, StringMatcher strMatcher, SequenceDatabase database,
                                 List<List<PseudoSequentialPattern>> patternCandidates, ReferenceSequenceFile refSeqFile, BufferedWriter regionWriter) throws IOException{
-        System.out.println("\nStart pattern post-processing, total candidate patterns: " + patternCount);        
+//        System.out.println("\n[Call] Start pattern post-processing, total candidate patterns: " + patternCount);
 
 //        BufferedWriter regionWriter = new BufferedWriter(new FileWriter(svRegionOut));       
         BufferedWriter mergedWriter;
@@ -93,7 +93,7 @@ public class Merge {
     private List<PseudoSequentialPattern> oneChromMerge(int chrom, SequenceDatabase database, List<PseudoSequentialPattern> patterns,
                                                         List<List<PseudoSequentialPattern>> patternCandidates, Map<Integer, List<Integer>> patternStartIndexMap){
         String chr = chrIdxNameMap[chrom];
-        System.out.println("\nProcess: " + chr +", #pattern before merge: " + patternCandidates.get(chrom).size());
+//        System.out.println("[Call] Process: " + chr +", #raw subgraphs found: " + patternCandidates.get(chrom).size());
         List<PseudoSequentialPattern> mergedPatternCandidates = new ArrayList<>();
 //        List<Entry<Integer, List<Integer>>> patternIndexEntrys = new ArrayList<>(patternStartAndIndexMap.entrySet());
         List<Map.Entry<Integer, List<Integer>>> patternIndexEntrys = new ArrayList<>(patternStartIndexMap.entrySet());
@@ -171,7 +171,7 @@ public class Merge {
                                 
         }
 
-        System.out.println("#Pattern after merge: " + mergedPatternCandidates.size());
+        System.out.println("[Call] Process: " + chr + "\t#subgraphs found: " + mergedPatternCandidates.size());
         return mergedPatternCandidates;
     }
     /**
@@ -304,19 +304,19 @@ public class Merge {
 
     }
 
-    private Link searchMaxSplitLink(SequenceDatabase database, List<PseudoSequentialPattern> sortedPatterns,
-                                    PseudoSequentialPattern sourecePattern, int sourcePatternIdx, Map<Integer, Integer> indexMap){
-        Link splitLink = null;
-        for (int i = 0; i < sortedPatterns.size(); i++ ){
-            PseudoSequentialPattern targetPattern = sortedPatterns.get(i);
-            splitLink = sourecePattern.splitAlignLink(database, targetPattern, sourcePatternIdx, indexMap.get(i));
-        }
-
-        return splitLink;
-    }
+//    private Link searchMaxSplitLink(SequenceDatabase database, List<PseudoSequentialPattern> sortedPatterns,
+//                                    PseudoSequentialPattern sourecePattern, int sourcePatternIdx, Map<Integer, Integer> indexMap){
+//        Link splitLink = null;
+//        for (int i = 0; i < sortedPatterns.size(); i++ ){
+//            PseudoSequentialPattern targetPattern = sortedPatterns.get(i);
+//            splitLink = sourecePattern.splitAlignLink(database, targetPattern, sourcePatternIdx, indexMap.get(i));
+//        }
+//
+//        return splitLink;
+//    }
 
      /**
-     * If a target pattern has ARP SuperItem, we can use it to search its mate pattern.Otherwise, we need to do consensus matching of itself.
+     * If a target pattern has ARP Node, we can use it to search its mate pattern.Otherwise, we need to do consensus matching of itself.
      * @param sortedPatterns
      * @param sourecePattern
      * @param linker
@@ -369,9 +369,9 @@ public class Merge {
             if (mateIndex != -1) {
 
                 for (Integer matchedMatePatternSuperItemIdx : matchedMatePatternIdx) {
-                    SuperItem superitemOne = sourecePattern.getSuperItemOfPatternAtPos(database, sourcePatternMatchSuperItemIdx);
+                    Node superitemOne = sourecePattern.getSuperItemOfPatternAtPos(database, sourcePatternMatchSuperItemIdx);
                     PseudoSequentialPattern matchedSequentialPattern = sortedPatterns.get(mateIndex);
-                    SuperItem superitemTwo = matchedSequentialPattern.getSuperItemOfPatternAtPos(database, matchedMatePatternSuperItemIdx);
+                    Node superitemTwo = matchedSequentialPattern.getSuperItemOfPatternAtPos(database, matchedMatePatternSuperItemIdx);
                     boolean isEnoughARPs = linker.twoSuperItemLinkCheck(superitemOne, superitemTwo);
                     if (isEnoughARPs) {
 //                        int[] mapq = new int[]{superitemOne.getSumMapQ(), superitemTwo.getSumMapQ()};
@@ -379,8 +379,10 @@ public class Merge {
 //                        String[] type = new String[]{superitemOne.getType(), superitemTwo.getType()};
                         int[] weight = new int[]{superitemOne.getWeight(), superitemTwo.getWeight()};
                         int originalIndex = indexMap.get(mateIndex);
-                        Link betweenLink = new Link(sourcePatternMatchSuperItemIdx, matchedMatePatternSuperItemIdx, linker.getSupLink(),
-                                superitemOne.getPos(), superitemTwo.getPos(), sourcePatternIdx, originalIndex, "bt");
+                        String bpType = inferBpTypeFromRpLink(superitemOne, superitemTwo);
+
+
+                        Link betweenLink = new Link(linker.getSupLink(), superitemOne.getPos(), superitemTwo.getPos(), sourcePatternIdx, originalIndex, "bt", bpType);
                         betweenLink.setBreakInfo(ratio, weight);
                         return betweenLink;
                     }
@@ -396,6 +398,38 @@ public class Merge {
 
         return null;
     }
+
+    /**
+     * Infer breakpoint type from discordant read-pairs
+     * @param nodeOne
+     * @param nodeTwo
+     * @return
+     */
+
+    private String inferBpTypeFromRpLink(Node nodeOne, Node nodeTwo){
+        String oneSigType = nodeOne.getType();
+        String twoSigType = nodeTwo.getType();
+
+        String linkSvType = "";
+        if (oneSigType.equals("ARP_SMALL_INSERT")){
+            linkSvType = "INS";
+        }
+
+        else if (oneSigType.equals("ARP_LARGE_INSERT")){
+            linkSvType = "DEL";
+        }
+
+        else if (oneSigType.equals("ARP_RF")){
+            linkSvType = "DUP";
+        }
+
+        else if (oneSigType.equals("ARP_FF") || oneSigType.equals("ARP_RR")){
+            linkSvType = "INV";
+        }
+
+        return linkSvType;
+    }
+
     /**
      * Merge patterns in a list to a new pattern.
      * @param arpPatterns

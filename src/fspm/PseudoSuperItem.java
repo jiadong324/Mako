@@ -5,8 +5,8 @@
  */
 package fspm;
 
+import structures.Node;
 import structures.SequenceDatabase;
-import structures.SuperItem;
 
 /**
  *
@@ -26,8 +26,8 @@ public class PseudoSuperItem implements Comparable<PseudoSuperItem>{
         itemsetIdx = itemsetIndex;
         itemIdx = itemIndex;
     }
-    public SuperItem getSuperItem(SequenceDatabase database){
-        SuperItem si = database.getSequenceByID(sequenceId).superItemAtPos(itemsetIdx, itemIdx);
+    public Node getSuperItem(SequenceDatabase database){
+        Node si = database.getSequenceByID(sequenceId).superItemAtPos(itemsetIdx, itemIdx);
         return si;
     }
     public void setPsSuperitemInfo(SequenceDatabase database){

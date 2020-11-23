@@ -1,6 +1,6 @@
 package utils;
 
-import channel.MutSignal;
+import collector.MutSignal;
 
 import java.util.List;
 

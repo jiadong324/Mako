@@ -8,10 +8,19 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../htsjdk/build/libs/htsjdk-2.13.2-4-g80122b9-SNAPSHOT.jar!/" />
+          <root url="jar://$USER_HOME$/javaExternalLib/htsjdk/build/libs/htsjdk-2.13.2-4-g80122b9-SNAPSHOT.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/javaExternalLib/jcommander-1.78.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

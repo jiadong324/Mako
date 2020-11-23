@@ -7,8 +7,8 @@ package utils;
 
 import fspm.PseudoSequentialPattern;
 import fspm.PseudoSuperItem;
+import structures.Node;
 import structures.SequenceDatabase;
-import structures.SuperItem;
 import htsjdk.samtools.QueryInterval;
 
 import java.util.*;
@@ -42,15 +42,15 @@ public class SuperItemLink {
         return uniqueNames;
     }
     
-    public boolean twoSuperItemLinkCheck(SuperItem superItemOne, SuperItem superItemTwo){
+    public boolean twoSuperItemLinkCheck(Node nodeOne, Node nodeTwo){
         boolean supported = false;
 
-        if (!superItemOne.getType().equals(superItemTwo.getType())) {
+        if (!nodeOne.getType().equals(nodeTwo.getType())) {
             return false;
         }
 
-        List<String> qnameOneList = getUniqueQnames(superItemOne.getQNames());
-        List<String> qnameTwoList = getUniqueQnames(superItemTwo.getQNames());
+        List<String> qnameOneList = getUniqueQnames(nodeOne.getQNames());
+        List<String> qnameTwoList = getUniqueQnames(nodeTwo.getQNames());
         Set<String> uniqueQName = new HashSet<>();
                
         int supportedARPs = 0;
@@ -81,8 +81,8 @@ public class SuperItemLink {
         if (length == 1){
             QueryInterval curInterval = superItems.get(0).getSuperItem(database).getSuperitemRegion();
             if (hasOverlap(curInterval, targetInterval)){
-                SuperItem itemOne = targetSuperItem.getSuperItem(database);
-                SuperItem itemTwo = superItems.get(0).getSuperItem(database);
+                Node itemOne = targetSuperItem.getSuperItem(database);
+                Node itemTwo = superItems.get(0).getSuperItem(database);
                 boolean isEnoughARPs = twoSuperItemLinkCheck(itemOne, itemTwo);
                 if (isEnoughARPs) {
                     return 0;
@@ -97,8 +97,8 @@ public class SuperItemLink {
         if (matchedSuperItemIdx.size() > 0) {
             int maxSup = 0;
             for (Integer id : matchedSuperItemIdx) {
-                SuperItem itemOne = targetSuperItem.getSuperItem(database);
-                SuperItem itemTwo = superItems.get(id).getSuperItem(database);
+                Node itemOne = targetSuperItem.getSuperItem(database);
+                Node itemTwo = superItems.get(id).getSuperItem(database);
                 boolean isEnoughARPs = twoSuperItemLinkCheck(itemOne, itemTwo);
 
                 if (isEnoughARPs && supLink > maxSup) {

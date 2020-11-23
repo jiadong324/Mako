@@ -9,6 +9,7 @@ public class Cluster implements Comparable<Cluster>{
 
     private List<double[]> vectors = new ArrayList<>();
     private List<Link> links;
+    private Set<String> bpTypes;
 
     // cluster properties
     private String clusterType;
@@ -19,6 +20,7 @@ public class Cluster implements Comparable<Cluster>{
     public Cluster(Link link) {
         sum = new double[2];
         links = new ArrayList<>();
+        bpTypes = new HashSet<>();
         clusterType = link.getLinkType();
     }
 
@@ -33,6 +35,10 @@ public class Cluster implements Comparable<Cluster>{
 
     public void addVector(Link link) {
         links.add(link);
+        if (!link.getBpType().equals("")){
+            bpTypes.add(link.getBpType());
+        }
+
         double[] vector = new double[]{link.getLinkedItemPos()[0], link.getLinkedItemPos()[1]};
         vectors.add(vector);
         for(int i = 0; i < vector.length; i++){
@@ -74,6 +80,8 @@ public class Cluster implements Comparable<Cluster>{
 
     public List<Link> getLinks() { return links; }
 
+    public Set<String> getBpTypes() { return bpTypes; }
+
     public double[] getMean(){ return mean; }
 
     public String getSupType() { return clusterType; }
@@ -83,7 +91,14 @@ public class Cluster implements Comparable<Cluster>{
     public int getClusterStd() { return clusterStd; }
 
     public String toString() {
+        List<String> list = new ArrayList<>(bpTypes);
         StringBuilder sb = new StringBuilder();
+        if (list.size() == 0) {
+            sb.append("BND,");
+        }else{
+            sb.append(list.get(0));
+            sb.append(",");
+        }
         sb.append((int)mean[0]);
         sb.append("-");
         sb.append((int)mean[1]);

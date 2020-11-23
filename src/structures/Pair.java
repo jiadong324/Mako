@@ -18,7 +18,7 @@ public class Pair {
     protected final boolean postfix;
     
     
-    private List<ItemSeqIdentifier> itemAppears = new ArrayList<ItemSeqIdentifier>();
+    private List<NodeSeqIdentifier> itemAppears = new ArrayList<NodeSeqIdentifier>();
     
     public Pair(boolean postfix, String item) {
         this.item = item;
@@ -74,16 +74,16 @@ public class Pair {
     * Get the list of sequence IDs associated with this item.
     * @return  the list of sequence IDs.
     */
-    public List<ItemSeqIdentifier> getItemAppear() {
+    public List<NodeSeqIdentifier> getItemAppear() {
        return itemAppears;
     }
 
     public void addItemAppearIdx(int seqID, int subseqStart, int itemsetIdx, int itemIdx){
-       itemAppears.add(new ItemSeqIdentifier(seqID, subseqStart, itemsetIdx, itemIdx));
+       itemAppears.add(new NodeSeqIdentifier(seqID, subseqStart, itemsetIdx, itemIdx));
     }
     
     public void printItemAppears(){
-        for (ItemSeqIdentifier itemIdentity : itemAppears){
+        for (NodeSeqIdentifier itemIdentity : itemAppears){
             System.out.println("type: " + item + " subseq: " + itemIdentity.getSubSeqID() 
             + " itemsetIdx: " + itemIdentity.getItemSetIdx());
         }

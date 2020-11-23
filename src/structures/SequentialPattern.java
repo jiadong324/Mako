@@ -17,7 +17,7 @@ public class SequentialPattern {
     // sequence id
     private int id;
     private int numTypes = 0;
-    private List<ItemSeqIdentifier> itemAppear;
+    private List<NodeSeqIdentifier> itemAppear;
     
     /** 
      * Test: alternative way to extract sequential pattern
@@ -103,10 +103,10 @@ public class SequentialPattern {
     
     
     
-    public void setItemAppear(List<ItemSeqIdentifier> itemAppearIdx){
+    public void setItemAppear(List<NodeSeqIdentifier> itemAppearIdx){
         itemAppear = itemAppearIdx;
     }
-    public List<ItemSeqIdentifier> getItemAppear(){
+    public List<NodeSeqIdentifier> getItemAppear(){
         return itemAppear;
     }
     public int size(){
@@ -153,16 +153,16 @@ public class SequentialPattern {
      * @param database
      * @return 
      */
-//    public List<SuperItem> getSuperItemsInPattern(SequenceDatabase database){
-//        List<SuperItem> superitems = new ArrayList<>(itemsets.size());
-//        for (ItemSeqIdentifier itemId : itemAppear){
+//    public List<Node> getSuperItemsInPattern(SequenceDatabase database){
+//        List<Node> superitems = new ArrayList<>(itemsets.size());
+//        for (NodeSeqIdentifier itemId : itemAppear){
 //            int seqId = itemId.getSeqID();  
 //            
 //            int superitemSetStartIdx = itemId.getSubSeqID() - length() + 1;
 //            for (int i = 0; i < length(); i ++){
 //                int superitemSetIdx = superitemSetStartIdx + i;
 //                for(int j = 0; j < database.getSequenceByID(seqId).getItemsets().get(superitemSetIdx).size();j ++){
-//                    SuperItem si = database.getSequenceByID(seqId).superItemAtPos(superitemSetIdx, j);
+//                    Node si = database.getSequenceByID(seqId).superItemAtPos(superitemSetIdx, j);
 //                    superitems.add(si);
 //                }
 //                
@@ -186,7 +186,7 @@ public class SequentialPattern {
 //        r.append(getItemAppear().size());
 //        r.append("\n");
         
-        for(ItemSeqIdentifier itemIdentity : itemAppear){
+        for(NodeSeqIdentifier itemIdentity : itemAppear){
             
             // write the sequence id
             int seqId = itemIdentity.getSeqID();                                   
@@ -196,9 +196,9 @@ public class SequentialPattern {
             for (int i = 0; i < length(); i ++){
                 int superitemSetIdx = superitemSetStartIdx + i;
                 for(int j = 0; j < database.getSequenceByID(seqId).getItemsets().get(superitemSetIdx).size();j ++){
-                    SuperItem curSuperItem = database.getSequenceByID(seqId).superItemAtPos(superitemSetIdx, j);
+                    Node curNode = database.getSequenceByID(seqId).superItemAtPos(superitemSetIdx, j);
                     patternInfo.append('(');
-                    patternInfo.append(curSuperItem.toConciseString());
+                    patternInfo.append(curNode.toConciseString());
                     patternInfo.append(')');
                     patternInfo.append(' ');
                 }

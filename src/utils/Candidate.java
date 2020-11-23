@@ -27,38 +27,47 @@ public class Candidate {
     private List<Cluster> clusters;
 
     private String chrom;
+    private Set<String> bpTypes;
 
 
     // Involve both inside and between links, this might indicate complex SVs
     public Candidate(String linkStr, PseudoSequentialPattern pattern,
                      Map<Integer, PseudoSequentialPattern> matePatterns, List<Link> links, SequenceDatabase database) {
         linkEvi = linkStr;
+        bpTypes = new HashSet<>();
         estimateBpFromLinks(pattern, matePatterns, links, database);
     }
 
 
     // Construct for unlinked patterns
-    public Candidate(int s, int e, String link, String pattern) {
-        linkEvi = link;
-        start = s;
-        end = e;
-        patternStr = pattern;
+//    public Candidate(int s, int e, String link, String pattern) {
+//        linkEvi = link;
+//        start = s;
+//        end = e;
+//        patternStr = pattern;
+//
+//    }
 
-    }
-    
+    /**
+     * Writer detected events to output.
+     * @param pattern
+     * @param writer
+     * @param idxNameMap
+     * @throws IOException
+     */
     public void writeSV(PseudoSequentialPattern pattern, BufferedWriter writer,
                         String[] idxNameMap) throws IOException{
 
         StringBuilder sb = new StringBuilder();
         chrom = idxNameMap[pattern.getPatternChromId()];
-        String svInfo = getCandidateInfo(pattern);
+        String patternInfo = getPatternInfo(pattern);
 
         if (end - start > 50){
-            sb.append(svLocStr());
+            sb.append(getCandidateInfo());
             sb.append("\t");
             sb.append(linkEvi);
             sb.append("\t");
-            sb.append(svInfo);
+            sb.append(patternInfo);
             sb.append("\t");
             sb.append(patternOri);
             writer.write(sb.toString());
@@ -67,31 +76,53 @@ public class Candidate {
 
     }
 
-    public void writeUnlinkedSV(PseudoSequentialPattern pattern, BufferedWriter writer, int arp,
-                        String[] idxNameMap) throws IOException{
-
+    /**
+     * Get the coordinates, breakpoint type of a candidate derived from its corresponding pattern.
+     * @return
+     */
+    private String getCandidateInfo() {
         StringBuilder sb = new StringBuilder();
-        chrom = idxNameMap[pattern.getPatternChromId()];
-        if (end - start > 50) {
-            sb.append(svLocStr());
+        sb.append(chrom);
+        sb.append("\t");
+        sb.append(start);
+        sb.append("\t");
+        sb.append(end);
+
+        if (bpTypes.size() == 0) {
             sb.append("\t");
-            sb.append(linkEvi);
-            sb.append("\t");
-            sb.append("cr=");
-            sb.append(pattern.getCrossedLen());
-            sb.append(";rp=");
-            sb.append(arp);
-            sb.append("\t");
-            sb.append(patternStr);
-            sb.append("\t");
-            sb.append(pattern.getPatternOris());
-            writer.write(sb.toString());
-            writer.newLine();
+            sb.append("BND");
+        }
+        else{
+            StringBuilder bpSb = new StringBuilder();
+            if (bpTypes.size() > 1){
+                for (String bp : bpTypes) {
+                    if (bp.equals("BND")) {
+                        continue;
+                    }
+                    bpSb.append(bp);
+                    bpSb.append(",");
+                }
+                sb.append("\t");
+                sb.append(bpSb.substring(0, bpSb.length() - 1));
+            }
+            else{
+                List<String> listBp = new ArrayList<>(bpTypes);
+                sb.append("\t");
+                sb.append(listBp.get(0));
+            }
+
         }
 
+        return sb.toString();
     }
 
-    private String getCandidateInfo(PseudoSequentialPattern pattern) {
+
+    /**
+     * Get SV pattern attributes for output.
+     * @param pattern
+     * @return
+     */
+    private String getPatternInfo(PseudoSequentialPattern pattern) {
         StringBuilder sb = new StringBuilder();
         int crossSup = pattern.getCrossedLen();
         sb.append("cxs=");
@@ -110,6 +141,14 @@ public class Candidate {
         return sb.toString();
     }
 
+
+    /**
+     * Estimate the breakpoint of each candidate events from discovered links
+     * @param pattern
+     * @param matePatterns
+     * @param links
+     * @param database
+     */
     private void estimateBpFromLinks(PseudoSequentialPattern pattern, Map<Integer, PseudoSequentialPattern> matePatterns,
                                      List<Link> links, SequenceDatabase database) {
 
@@ -120,7 +159,7 @@ public class Candidate {
         StringBuilder patternOriSb = new StringBuilder();
         patternOriSb.append(pattern.getPatternOris());
 
-        // Between links dose not exist
+        // Between subgraph links dose not exist
         if (matePatterns == null || matePatterns.size() == 0) {
 
             if (pattern.hasSplitAlign()) {
@@ -129,9 +168,8 @@ public class Candidate {
             if (pattern.hasArpLinks()) {
                 allLinks.addAll(pattern.getArpLinksInPattern());
             }
-
-
-        }else{
+        }
+        else{
             allLinks.addAll(links);
             if (pattern.hasArpLinks()) {
                 allLinks.addAll(pattern.getArpLinksInPattern());
@@ -156,59 +194,31 @@ public class Candidate {
                 }
             }
         }
+
         patternStr = patternStrSb.toString();
         patternOri = patternOriSb.toString();
-        clusters = resolveLinks(allLinks, 100);
+        clusters = resolveLinks(allLinks);
 
         List<Integer> bps = new ArrayList<>();
         for (Cluster cluster : clusters) {
+            bpTypes.addAll(cluster.getBpTypes());
             cluster.computeClusterStats();
             bps.add((int)cluster.getMean()[0]);
             bps.add((int)cluster.getMean()[1]);
         }
 //        List<Integer> bps = getHighConfBp();
         Collections.sort(bps);
-        // Cannot find high confident node to define breakpoints
-//        if (bps.isEmpty()){
-//            start = -1;
-//            end = -1;
-//        }else{
-//            start = bps.get(0);
-//            end = bps.get(bps.size() - 1);
-//        }
+
         start = bps.get(0);
         end = bps.get(bps.size() - 1);
     }
 
-    private List<Integer> getHighConfBp() {
-        List<Integer> bps = new ArrayList<>();
-        for (Cluster cluster : clusters){
-            cluster.computeClusterStats();
-            if (cluster.getSupType().equals("sa")){
-                bps.add((int)cluster.getMean()[0]);
-                bps.add((int)cluster.getMean()[1]);
-            }
-            else{
-                List<Link> links = cluster.getLinks();
-                for (Link link : links) {
-                    if (link.getLinkType().equals("rp")){
-                        double[] bpRatio = link.getBpRatio();
-                        int[] bpWeight = link.getBpWeight();
-                        int[] linkedPos = link.getLinkedItemPos();
-                        if (bpRatio[0] >= 0.2 || bpWeight[0] >= 3) {
-                            bps.add(linkedPos[0]);
-                        }
-                        if (bpRatio[1] >= 0.2 || bpWeight[1] >= 3) {
-                            bps.add(linkedPos[1]);
-                        }
-                    }
-                }
-            }
-        }
-        return bps;
-    }
-
-    private List<Cluster> resolveLinks(List<Link> links, double maxDist) {
+    /**
+     * A help function to cluster similar links with heirachical clustering
+     * @param links
+     * @return
+     */
+    private List<Cluster> resolveLinks(List<Link> links) {
         List<Cluster> clusters = new ArrayList<>();
         for (int i = 0; i < links.size(); i++) {
             Link link = links.get(i);
@@ -221,13 +231,13 @@ public class Candidate {
         boolean merged = false;
 
         do {
-            merged = mergeClosestCluster(clusters, maxDist);
+            merged = mergeClosestCluster(clusters);
         } while(merged);
 
         return clusters;
     }
 
-    private boolean mergeClosestCluster(List<Cluster> clusters, double maxDist) {
+    private boolean mergeClosestCluster(List<Cluster> clusters) {
         Cluster clusterToMergeOne = null;
         Cluster clusterToMergeTwo = null;
         double minDist = Integer.MAX_VALUE;
@@ -238,7 +248,7 @@ public class Candidate {
                 double distance = calculateDistance(clusters.get(i).getMean(), clusters.get(j).getMean());
                 // if the distance is less than the max distance allowed
                 // and if it is the smallest distance until now
-                if (distance < minDist && distance <= maxDist) {
+                if (distance < minDist && distance <= 100) {
                     // record this pair of clusters
                     minDist = distance;
                     clusterToMergeOne = clusters.get(i);
@@ -297,16 +307,5 @@ public class Candidate {
             }
         }
         return numClusters * nodeType.size();
-    }
-
-    private String svLocStr() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(chrom);
-        sb.append("\t");
-        sb.append(start);
-        sb.append("\t");
-        sb.append(end);
-        
-        return sb.toString();
     }
 }

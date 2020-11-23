@@ -12,7 +12,7 @@ Please check the [wiki](https://github.com/jiadong324/Mako/wiki) page for more d
 
 Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** for directly usage. See [Release](https://github.com/jiadong324/Mako/releases).
 
-**Note:** All results from the paper is made by **Mako.jar**, which is a beta version.
+**NOTE:** All results from the paper is made by **Mako.jar**, which is a beta version.
 
 ### Dependency
 
@@ -22,50 +22,26 @@ Mako requires Java JDK (>=1.8), we provide a prebuilt JAR package **Mako.jar** f
 
 ### Usage
 
+**NOTE:** BAM file should under your working directory.
 ```
-git clone https://github.com/jiadong324/Mako.git
-```
-
-##### Step 1: create Mako configuration file
-
-
-**Note:** The BAM file  **must** under your working_dir.  The working_dir is default output directory of Mako results.
-
-```
+# Configuration
 python process.py config -b sample.bam -n 30000 -w ./working_dir/ -s sampleName -f /path/to/ref.fa.fai
-```
 
-The configuration file is *sampleName.mako.cfg*.
-
-##### Step 2: run detection
-
-```
-# Get help info of Mako
-
-java -jar Mako.jar
-
-```
-
-Run SV discovery with Mako configuration file.
-```
+# Detection
 java -jar Mako.jar -R /path/to/ref.fa -F /path/to/sampleName.mako.cfg
-```
 
-##### Step 3: Convert Mako output to standard VCF format
-
-```
+# Convert to VCF format
 python ParseMako.py tovcf -m sampleName_mako_calls.txt -o sampleName_mako.vcf -r /path/to/ref.fa -s sampleName
 ```
 
 ### Run demo data
 
-Note that the demo data is small, large minFreq is not recommended.
 ```
 # Create configuration file
-python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240
+python /path/to/process.py config -b NA19240.30X.chr20.1000K-2000K.bam -N 30000 -w ./working_dir/ -s NA19240 -f /ref.fa.fai
 
 # Run Mako
-java -jar /path/to/Mako.jar fa=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa bamCfg=/path/to/NA19240.mako.cfg minFreq=1 chrom=chr20
+java -jar /path/to/Mako.jar -R /path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa -F /path/to/NA19240.mako.cfg
 ```
 
 ### Known issues
